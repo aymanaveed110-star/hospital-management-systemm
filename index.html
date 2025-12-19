@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hospital Management System</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+    h1 { text-align: center; color: #333; }
+    .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    .menu button { padding: 10px 20px; border: none; background: #007BFF; color: white; cursor: pointer; border-radius: 5px; }
+    .menu button:hover { background: #0056b3; }
+    .section { display: none; max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    input, button { margin: 5px 0; padding: 8px; width: 100%; box-sizing: border-box; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 5px 0; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <h1>Hospital Management System</h1>
+
+  <div class="menu">
+    <button onclick="showSection('addPatient')">Add Patient</button>
+    <button onclick="showSection('viewPatients')">View Patients</button>
+    <button onclick="showSection('addDoctor')">Add Doctor</button>
+    <button onclick="showSection('viewDoctors')">View Doctors</button>
+    <button onclick="showSection('addAppointment')">Add Appointment</button>
+    <button onclick="showSection('viewAppointments')">View Appointments</button>
+    <button onclick="showSection('addBill')">Add Bill</button>
+    <button onclick="showSection('viewBills')">View Bills</button>
+  </div>
+
+  <!-- ---------- Add Patient ---------- -->
+  <div id="addPatient" class="section">
+    <h2>Add Patient</h2>
+    <input placeholder="Patient ID" id="pid" />
+    <input placeholder="Name" id="pname" />
+    <input placeholder="Age" type="number" id="page" />
+    <input placeholder="Disease" id="pdisease" />
+    <button onclick="addPatient()">Add Patient</button>
+  </div>
+
+  <div id="viewPatients" class="section">
+    <h2>Patients List</h2>
+    <ul id="patientsList"></ul>
+  </div>
+
+  <!-- ---------- Add Doctor ---------- -->
+  <div id="addDoctor" class="section">
+    <h2>Add Doctor</h2>
+    <input placeholder="Doctor ID" id="did" />
+    <input placeholder="Name" id="dname" />
+    <input placeholder="Specialty" id="dspecialty" />
+    <button onclick="addDoctor()">Add Doctor</button>
+  </div>
+
+  <div id="viewDoctors" class="section">
+    <h2>Doctors List</h2>
+    <ul id="doctorsList"></ul>
+  </div>
+
+  <!-- ---------- Add Appointment ---------- -->
+  <div id="addAppointment" class="section">
+    <h2>Add Appointment</h2>
+    <input placeholder="Patient ID" id="apid" />
+    <input placeholder="Doctor ID" id="adid" />
+    <input type="date" id="adate" />
+    <button onclick="addAppointment()">Add Appointment</button>
+  </div>
+
+  <div id="viewAppointments" class="section">
+    <h2>Appointments List</h2>
+    <ul id="appointmentsList"></ul>
+  </div>
+
+  <!-- ---------- Add Bill ---------- -->
+  <div id="addBill" class="section">
+    <h2>Add Bill</h2>
+    <input placeholder="Patient ID" id="bpid" />
+    <input placeholder="Consultation Fee" type="number" id="consultation" />
+    <input placeholder="Medicine Fee" type="number" id="medicine" />
+    <input placeholder="Other Charges" type="number" id="other" />
+    <button onclick="addBill()">Add Bill</button>
+  </div>
+
+  <div id="viewBills" class="section">
+    <h2>Bills List</h2>
+    <ul id="billsList"></ul>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:5000"; // Change to deployed Flask backend URL
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+
+      // Refresh list when viewing
+      if(id === 'viewPatients') viewPatients();
+      if(id === 'viewDoctors') viewDoctors();
+      if(id === 'viewAppointments') viewAppointments();
+      if(id === 'viewBills') viewBills();
+    }
+
+    // ---------------- Patients ----------------
+    async function addPatient() {
+      const pid = document.getElementById('pid').value;
+      const name = document.getElementById('pname').value;
+      const age = document.getElementById('page').value;
+      const disease = document.getElementById('pdisease').value;
+
+      const res = await fetch(`${API_BASE}/patients`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({pid,name,age,disease})
+      });
+      const data = await res.json();
+      alert(data.message);
+      clearPatientInputs();
+    }
+
+    async function viewPatients() {
+      const res = await fetch(`${API_BASE}/patients`);
+      const patients = await res.json();
+      const ul = document.getElementById('patientsList');
+      ul.innerHTML = '';
+      patients.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = `${p.pid} - ${p.name} - ${p.age} - ${p.disease}`;
+        ul.appendChild(li);
+      });
+    }
+
+    function clearPatientInputs() {
+      document.getElementById('pid').value = '';
+      document.getElementById('pname').value = '';
+      document.getElementById('page').value = '';
+      document.getElementById('pdisease').value = '';
+    }
+
+    // ---------------- Doctors ----------------
+    async function addDoctor() {
+      const did = document.getElementById('did').value;
+      const name = document.getElementById('dname').value;
+      const specialty = document.getElementById('dspecialty').value;
+
+      const res = await fetch(`${API_BASE}/doctors`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({did,name,specialty})
+      });
+      const data = await res.json();
+      alert(data.message);
+      clearDoctorInputs();
+    }
+
+    async function viewDoctors() {
+      const res = await fetch(`${API_BASE}/doctors`);
+      const doctors = await res.json();
+      const ul = document.getElementById('doctorsList');
+      ul.innerHTML = '';
+      doctors.forEach(d => {
+        const li = document.createElement('li');
+        li.textContent = `${d.did} - ${d.name} - ${d.specialty}`;
+        ul.appendChild(li);
+      });
+    }
+
+    function clearDoctorInputs() {
+      document.getElementById('did').value = '';
+      document.getElementById('dname').value = '';
+      document.getElementById('dspecialty').value = '';
+    }
+
+    // ---------------- Appointments ----------------
+    async function addAppointment() {
+      const pid = document.getElementById('apid').value;
+      const did = document.getElementById('adid').value;
+      const date = document.getElementById('adate').value;
+
+      const res = await fetch(`${API_BASE}/appointments`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({pid,did,date})
+      });
+      const data = await res.json();
+      alert(data.message);
+      clearAppointmentInputs();
+    }
+
+    async function viewAppointments() {
+      const res = await fetch(`${API_BASE}/appointments`);
+      const appointments = await res.json();
+      const ul = document.getElementById('appointmentsList');
+      ul.innerHTML = '';
+      appointments.forEach(a => {
+        const li = document.createElement('li');
+        li.textContent = `${a.pid} - ${a.did} - ${a.date}`;
+        ul.appendChild(li);
+      });
+    }
+
+    function clearAppointmentInputs() {
+      document.getElementById('apid').value = '';
+      document.getElementById('adid').value = '';
+      document.getElementById('adate').value = '';
+    }
+
+    // ---------------- Bills ----------------
+    async function addBill() {
+      const pid = document.getElementById('bpid').value;
+      const consultation_fee = parseFloat(document.getElementById('consultation').value);
+      const medicine_fee = parseFloat(document.getElementById('medicine').value);
+      const other_charges = parseFloat(document.getElementById('other').value);
+
+      const res = await fetch(`${API_BASE}/bills`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({pid, consultation_fee, medicine_fee, other_charges})
+      });
+      const data = await res.json();
+      alert(data.message);
+      clearBillInputs();
+    }
+
+    async function viewBills() {
+      const res = await fetch(`${API_BASE}/bills`);
+      const bills = await res.json();
+      const ul = document.getElementById('billsList');
+      ul.innerHTML = '';
+      bills.forEach(b => {
+        const li = document.createElement('li');
+        const total = b.consultation_fee + b.medicine_fee + b.other_charges;
+        li.textContent = `Patient ID: ${b.pid} - Total: ${total} (Consultation: ${b.consultation_fee}, Medicine: ${b.medicine_fee}, Other: ${b.other_charges})`;
+        ul.appendChild(li);
+      });
+    }
+
+    // Optional: Show default section
+    showSection('addPatient');
+  </script>
+</body>
+</html>
